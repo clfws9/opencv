@@ -1718,6 +1718,7 @@ bool CvCapture_FFMPEG::retrieveFrame(int flag, unsigned char** data, int* step, 
 
     CV_LOG_DEBUG(NULL, "Input picture format: " << av_get_pix_fmt_name((AVPixelFormat)sw_picture->format));
     CV_LOG_DEBUG(NULL, "Input picture colorspace: " << av_get_colorspace_name(sw_picture->colorspace));
+    CV_LOG_DEBUG(NULL, "Input picture color range: " << av_color_range_name(sw_picture->color_range));
     const AVPixelFormat result_format = convertRGB ? AV_PIX_FMT_BGR24 : (AVPixelFormat)sw_picture->format;
     switch (result_format)
     {
@@ -1779,9 +1780,10 @@ bool CvCapture_FFMPEG::retrieveFrame(int flag, unsigned char** data, int* step, 
         frame.step = rgb_picture.linesize[0];
 
         const int* colorspace_coeffs = sws_getCoefficients(sw_picture->colorspace);
+        const int color_range_flag = sw_picture->color_range == AVCOL_RANGE_JPEG? 1: 0;
         sws_setColorspaceDetails(img_convert_ctx,
-                                 colorspace_coeffs, sw_picture->color_range,
-                                 colorspace_coeffs, convertRGB? 0: sw_picture->color_range,
+                                 colorspace_coeffs, color_range_flag,
+                                 colorspace_coeffs, convertRGB? 0: color_range_flag,
                                  0, 1<<16, 1<<16);
     }
 
